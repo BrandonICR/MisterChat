@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.web.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.web.WebView?>
+
+<AnchorPane id="AnchorPane" fx:id="anchorPaneInicio" prefHeight="609.0" prefWidth="750.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.com.brandonicr.chat.FXMLDocumentController">
+    <children>
+      <WebView fx:id="webView" layoutX="265.0" layoutY="5.0" prefHeight="446.0" prefWidth="481.0" />
+      <Button fx:id="buttonAgregar" layoutX="694.0" layoutY="576.0" mnemonicParsing="false" onAction="#agregarTexto" style="-fx-background-color: #c20000;" text="Enviar" textFill="WHITE">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor></Button>
+      <TextField fx:id="textFieldEnviar" layoutX="333.0" layoutY="576.0" prefHeight="25.0" prefWidth="354.0" promptText="Escribe algo...">
+         <font>
+            <Font name="Bauhaus 93" size="14.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="V_RESIZE" />
+         </cursor></TextField>
+      <Button fx:id="buttonAdjuntar" layoutX="251.0" layoutY="575.0" mnemonicParsing="false" onAction="#adjuntarArchivo" style="-fx-background-color: #c20000;" text="Adjuntar" textFill="WHITE">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor></Button>
+      <Label fx:id="labelMostrar" layoutX="14.0" layoutY="5.0" prefHeight="43.0" prefWidth="244.0" style="-fx-background-color: black;" text="En la sala" textFill="#b50000">
+         <font>
+            <Font name="Arial Bold" size="19.0" />
+         </font></Label>
+      <Button fx:id="buttonEmoticon1" layoutX="293.0" layoutY="474.0" mnemonicParsing="false" onAction="#presionarIcono1" prefHeight="80.0" prefWidth="80.0" style="-fx-background-image: url(mx/com/brandonicr/chat/static/images/emoticon1.jpg); -fx-background-size: 80px;">
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor></Button>
+      <Button fx:id="buttonEmoticon2" layoutX="402.0" layoutY="474.0" mnemonicParsing="false" onAction="#presionarIcono2" prefHeight="80.0" prefWidth="80.0" style="-fx-background-image: url(mx/com/brandonicr/chat/static/images/emoticon2.jpg); -fx-background-size: 80px;">
+         <cursor>
+            <Cursor fx:constant="OPEN_HAND" />
+         </cursor></Button>
+      <Button fx:id="buttonEmoticon3" layoutX="510.0" layoutY="474.0" mnemonicParsing="false" onAction="#presionarIcono3" prefHeight="80.0" prefWidth="80.0" style="-fx-background-image: url(mx/com/brandonicr/chat/static/images/emoticon3.jpg); -fx-background-size: 80px;">
+         <cursor>
+            <Cursor fx:constant="OPEN_HAND" />
+         </cursor></Button>
+      <Button fx:id="buttonEmoticon4" layoutX="614.0" layoutY="474.0" mnemonicParsing="false" onAction="#presionarIcono4" prefHeight="80.0" prefWidth="80.0" style="-fx-background-image: url(mx/com/brandonicr/chat/static/images/emoticon4.jpg); -fx-background-size: 80px;">
+         <cursor>
+            <Cursor fx:constant="OPEN_HAND" />
+         </cursor></Button>
+      <ListView fx:id="listViewContactos" layoutX="7.0" layoutY="60.0" prefHeight="425.0" prefWidth="244.0" />
+      <TextField fx:id="textFieldUsername" layoutX="17.0" layoutY="514.0" prefHeight="25.0" prefWidth="224.0" promptText="Usuario">
+         <cursor>
+            <Cursor fx:constant="V_RESIZE" />
+         </cursor></TextField>
+      <Button fx:id="buttonActivo" layoutX="86.0" layoutY="554.0" mnemonicParsing="false" onAction="#activar" style="-fx-background-color: #093c76;" text="Conectarse" textFill="WHITE">
+         <cursor>
+            <Cursor fx:constant="CLOSED_HAND" />
+         </cursor></Button>
+    </children>
+</AnchorPane>
