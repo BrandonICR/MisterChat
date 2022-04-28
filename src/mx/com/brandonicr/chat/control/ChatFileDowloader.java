@@ -2,226 +2,161 @@ package mx.com.brandonicr.chat.control;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.util.Base64;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.application.Platform;
-import javafx.scene.web.WebEngine;
-import mx.com.brandonicr.chat.common.dto.Archivo;
+import javax.swing.text.html.HTML.Tag;
 
-public class ChatFileDowloader extends Thread{
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.html.HTMLImageElement;
+
+import javafx.application.Platform;
+import mx.com.brandonicr.chat.common.constants.FilePaths;
+import mx.com.brandonicr.chat.common.constants.ServicesConstants;
+import mx.com.brandonicr.chat.common.constants.SpecialCharacterConstants;
+import mx.com.brandonicr.chat.common.dto.FileChat;
+import mx.com.brandonicr.chat.common.dto.FileChatBuilder;
+import mx.com.brandonicr.chat.common.dto.FileSessionInfo;
+import mx.com.brandonicr.chat.common.utils.ComponentBuilder;
+import mx.com.brandonicr.chat.common.utils.ElementUtils;
+import mx.com.brandonicr.chat.common.utils.ObjectValidator;
+import mx.com.brandonicr.chat.common.utils.Utils;
+
+public class ChatFileDowloader implements Runnable {
+
+    Logger log = Logger.getLogger(ChatFileDowloader.class.getName());
     
-    private WebEngine we;
-    private String userName;
-    private Date dateUserName;
-    private boolean isEnviar;
-    private File f;
-    private boolean isPrivado;
+    private FileSessionInfo fileSessionInfo;
     
-    public ChatFileDowloader( WebEngine we, String userName, Date dateUserName, boolean isEnviar, File archivo, boolean isPrivado){
-        this.we = we;
-        this.userName = userName;
-        this.dateUserName = dateUserName;
-        this.isEnviar = isEnviar;
-        this.f = archivo;
-        this.isPrivado = isPrivado;
+    public ChatFileDowloader(FileSessionInfo fileSessionInfo){
+        this.fileSessionInfo = fileSessionInfo;
     }
 
-    public void recibirArchivo(){
+    public void sleepThread(long time) {
         try {
-            int posicion = 0;
-            int total=0;
-            
-            ArrayList<Archivo> arch = new ArrayList<>();
-            
-            String pathIn = "R";
-            
-            try {
-                MulticastSocket ms = new MulticastSocket(1025);
-                ms.setReuseAddress(true);
-                ms.setTimeToLive(255);
-                InetAddress ia = InetAddress.getByName("230.0.0.1");
-                ms.joinGroup(ia);            
-                DatagramPacket dps = new DatagramPacket(new byte[1500],1500);
+            Thread.sleep(time);
+        } catch (InterruptedException ex) {
+            log.log(Level.INFO, "File Pat Sended");
+        }
+    }
+
+    public void receiveFile(){
+        FileChatBuilder fileChatBuilder = new FileChatBuilder(FilePaths.rootDowloadPath, fileSessionInfo.getFileName());
+        try {
+            MulticastSocket ms = new MulticastSocket(ServicesConstants.FILE_GROUP_PORT);
+            ms.setReuseAddress(true);
+            ms.setTimeToLive(ServicesConstants.FILE_GROUP_TIME_TO_LIVE);
+            InetAddress ia = InetAddress.getByName(ServicesConstants.FILE_GROUP_ADDRESS);
+            ms.joinGroup(ia);
+            while(!fileChatBuilder.isCompleted()){
+                DatagramPacket dps = new DatagramPacket(new byte[ServicesConstants.GENERAL_SIZE_PACKET], ServicesConstants.GENERAL_SIZE_PACKET);
                 ms.receive(dps);
                 ByteArrayInputStream bais = new ByteArrayInputStream(dps.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
-                Archivo acr = (Archivo)ois.readObject();
-                posicion = acr.getOrden();
-                arch.add(acr);
-
-                //System.out.println("Se ha recibido "+0+"% del archivo "+(acr.getNombre())+", parte :"+(acr.getOrden()));
-
+                FileChat fileChat = (FileChat)ois.readObject();
+                log.log(Level.INFO, "FilePart recibido: {0}", fileChat);
+                if(fileChatBuilder.processFileFragment(fileChat))
+                    log.log(Level.INFO, "Progress: {0} FileName: {1} CurrentPart: {2}", new Object[]{fileChatBuilder.getProgress(), fileChat.getFileName(), fileChat.getFragmentPosition()});
+                else
+                    log.log(Level.INFO, "Fragmento no valido obtenido");
                 ois.close();
                 bais.close();
-                ms.close();
-                
-                MulticastSocket ms2 = new MulticastSocket(1025);
-                ms2.setReuseAddress(true);
-                ms2.setTimeToLive(255);
-                ms2.joinGroup(ia);      
-                long tam = acr.getTamano();int enviados = 0, promedio = 0;
-                boolean bandera=true;
-                while(bandera){
-                    DatagramPacket dps2 = new DatagramPacket(new byte[1500],1500);
-                    ms2.receive(dps2);
-                    ByteArrayInputStream bais2 = new ByteArrayInputStream(dps2.getData(),0,dps2.getLength());
-                    ObjectInputStream ois2 = new ObjectInputStream(bais2);
-                    Archivo a2 = (Archivo)ois2.readObject();
-                    posicion = a2.getOrden();
-                    boolean archExiste=false;
-                    boolean esUltimo=false;
-
-                    for (Archivo aux : arch){
-                        if((aux.getOrden()==posicion)&&(!a2.getUltimo()))
-                            archExiste=true;
-                        else if((aux.getOrden()==posicion)&&(a2.getUltimo())){
-                            archExiste=false; //Caso en que sea el ultimo y tambien que ya exista en la lista
-                            esUltimo=true;
-                        }
-                    }
-
-                    if(archExiste == false){
-                        if(esUltimo==false){
-                            arch.add(a2);
-                            int n = a2.getEnviadoTam();
-                            enviados = enviados + n;
-                            promedio = (int)((enviados * 100)/tam);
-                        }
-                        if(a2.getUltimo()){
-                            total = a2.getOrden()+1;
-                        }
-                    }
-
-                    promedio = (arch.size()*100)/(arch.get(0).getNumFragmentos());
-
-                    System.out.println("_______ Tenemos " + promedio + "% archivos.______"+ a2.getNumFragmentos()+"__ parte:"+a2.getOrden());
-
-                    if(arch.size()>= (arch.get(0).getNumFragmentos())){
-                        bandera=false;
-                    }else{
-                        boolean res = true;
-                    }
-                    ois2.close();
-                    bais2.close();
-                }
-                ms2.close();
-                
-                File general = new File(pathIn + arch.get(0).getNombre());
-                general.setWritable(true);
-                general.setReadable(true);
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(general,true));
-                for(int i=0;i<=arch.size();i++){
-                    for(Archivo aux : arch){
-                        //System.out.print("\n Comparamos:"+aux.getOrden()+"=="+i+" :");
-                        if(aux.getOrden()==i){
-                            //System.out.print("Si");
-                            dos.write(aux.getArch(), 0, (int)(aux.getEnviadoTam()));
-                            dos.flush();
-                        }//else
-                            //System.out.print("No");
-                    }
-                }
-                
-                System.out.println("Se ha recibido el archivo completo..."+general.getName());
-                
-                Platform.runLater(() -> we.executeScript("var salto = document.createElement(\"br\"); document.body.appendChild(salto);"));
-                Platform.runLater(() -> we.executeScript("var salto = document.createElement(\"br\"); document.body.appendChild(salto);"));
-                Platform.runLater(() -> we.executeScript("var para = document.createElement(\"p\"); para.style.display = \"inline\"; para.innerText = \""+((isPrivado == true) ? "Privado::" : "" )+(dateUserName)+"::"+userName+"::"+"\";document.body.appendChild(para);"));
-                Platform.runLater(() -> we.executeScript("var salto = document.createElement(\"br\"); document.body.appendChild(salto);"));
-                String sentencia = "var imag = document.createElement(\"img\"); imag.setAttribute(\"align\",\"middle\"); imag.setAttribute(\"src\",\"file:/E:/contenido/Practica3RC/"+general.getName()+"\"); imag.setAttribute(\"width\",\"250\"); imag.setAttribute(\"height\",\"250\"); document.body.appendChild(imag);";
-                Platform.runLater(() -> we.executeScript(sentencia));
-            
-                System.out.println("Se ha mostrado la imagen en la pantalla..."+general.getName());
-                dos.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
-        } catch (ClassNotFoundException ex) {
+            ms.close();
+        } catch (ClassNotFoundException|IOException ex) {
             ex.printStackTrace();
         }
+        if(fileChatBuilder.getIsCompleted()){
+            log.log(Level.INFO, "The file was received successfully: {}", fileChatBuilder.getFileName());
+            if(!fileChatBuilder.build())
+                return;
+            Platform.runLater(() -> {
+                try{
+                    Document document = fileSessionInfo.getWebEngine().getDocument(); 
+                    Node body = document.getElementsByTagName(Tag.BODY.toString()).item(SpecialCharacterConstants.INT_ZERO);
+                    HTMLImageElement elementImage = (HTMLImageElement)ComponentBuilder.imageElement(document);
+                    elementImage.setSrc(FilePaths.fileBasePath.concat(fileChatBuilder.getAbsolutePathFile()));
+                    String message = Utils.formatDate(new Date())+"::"+(String)ObjectValidator.ifTrueReturnOrElse(fileSessionInfo.getConfig().isPrivate(), "PRIVATE::", SpecialCharacterConstants.STR_EMPTY)+fileSessionInfo.getSender().getUserName();
+                    Node messageTextNode = ElementUtils.buildNodeMessage(message, document);
+                    body.appendChild(messageTextNode);
+                    body.appendChild(elementImage);
+                }catch(Exception ex){
+                    log.log(Level.SEVERE, ex.getMessage(), ex);
+                }
+            });
+            log.log(Level.INFO, "The image was showed: {0}", fileChatBuilder.getFileName());
+        }else
+            log.log(Level.SEVERE, "The file was not received successfully: {0}", fileChatBuilder.getFileName());
     }
     
-    public void enviarArchivo(){
+    public void sendFile(){
         try {
-            f.setReadable(true);
-            f.setWritable(true);
-            MulticastSocket s  = new MulticastSocket(1025);
-            s.setReuseAddress(true);
-            s.setTimeToLive(255);
-            InetAddress ia = InetAddress.getByName("230.0.0.1");
-            s.joinGroup(ia);
-            int n = 0;
-            int kk = 0;
-            while(kk < 200){
-                DataInputStream disF = new DataInputStream(new FileInputStream(f.getAbsolutePath()));
-                long tamano = f.length();
-                String nombre = f.getName();
-                int numPartes;
-                boolean ultimo = false;
-                if((tamano%1303)==0)
-                    numPartes = (int)(tamano / 1303);
-                else
-                    numPartes = (int)((tamano / 1303) + 1);
-
-                int partes = 0, leidos = 0, promedio = 0;
-                while(partes < numPartes){
-                    byte []b = new byte[1303];
-                    n = disF.read(b);
-                    leidos = leidos + n;
-                    promedio = (int)((leidos*100)/tamano);
-
-                    if(partes == numPartes)
-                        ultimo = true;
-                    else
-                        ultimo = false;
-
-                    Archivo archivo = new Archivo(b, nombre, partes, tamano, n, ultimo, numPartes);
-
+            File file = fileSessionInfo.getFile();
+            String filename = file.getName();
+            byte []fileBase64 = Base64.getEncoder().encode(Files.readAllBytes(file.toPath()));
+            int fragmentBlock = (int)Math.ceil(((double)fileBase64.length) / ((double)ServicesConstants.FILE_GROUP_NUMBER_PARTS));
+            MulticastSocket ms  = new MulticastSocket(ServicesConstants.FILE_GROUP_PORT);
+            ms.setReuseAddress(true);
+            ms.setTimeToLive(ServicesConstants.FILE_GROUP_TIME_TO_LIVE);
+            InetAddress ia = InetAddress.getByName(ServicesConstants.FILE_GROUP_ADDRESS);
+            ms.joinGroup(ia);
+            int timesSended = 1;
+            while(timesSended < ServicesConstants.FILE_GROUP_TIMES_TO_SEND){
+                int readed = 0;
+                int averageReaded = 0;
+                for(int fragmentPosition = 0; fragmentPosition < ServicesConstants.FILE_GROUP_NUMBER_PARTS; fragmentPosition++){
+                    int fragmentSize = ((fragmentPosition + 1) * fragmentBlock < fileBase64.length) ? fragmentBlock : (fileBase64.length - (fragmentPosition * fragmentBlock));
+                    byte []bytesReaded = new byte[fragmentSize];
+                    System.arraycopy(fileBase64, fragmentPosition * fragmentBlock, bytesReaded, SpecialCharacterConstants.INT_ZERO, fragmentSize);
+                    readed += fragmentSize;
+                    averageReaded = (readed * SpecialCharacterConstants.INT_ONE_HUNDRED)/fileBase64.length;
+                    
+                    FileChat objFilePart = new FileChat(bytesReaded, filename, fileBase64.length, fragmentSize, fragmentPosition, ServicesConstants.FILE_GROUP_NUMBER_PARTS, (fragmentPosition + 1) == ServicesConstants.FILE_GROUP_NUMBER_PARTS);
+                    
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ObjectOutputStream oos = new ObjectOutputStream(baos);
-                    oos.writeObject(archivo);
+                    oos.writeObject(objFilePart);
                     oos.flush();
 
-                    DatagramPacket dp = new DatagramPacket(baos.toByteArray(),0,baos.toByteArray().length,ia,1025);
+                    DatagramPacket dp = new DatagramPacket(baos.toByteArray(), 0, baos.toByteArray().length, ia, ServicesConstants.FILE_GROUP_PORT);
 
-                    s.send(dp);
+                    ms.send(dp);
+                    
+                    String progressMessage = String.format("It was sending _%d%%_ of file _%s_ part _%d_  with size _%d_", averageReaded, filename, fragmentPosition, fragmentSize);
+                    log.info(progressMessage);
 
-                    //System.out.println("Se ha enviado el _"+promedio+"%_ del archivo _"+nombre+"_ en la parte _"+partes+"_ de tamano _"+baos.toByteArray().length);
+                    sleepThread(500l);
 
                     oos.close();
                     baos.close();
-
-                    partes++;
                 }
-                disF.close();
-                System.out.println("Se ha enviado, vez"+kk);
-                kk++;
+                log.log(Level.INFO, "The file has send, times {0}", timesSended);
+                timesSended++;
             }
-            s.close();
-            System.out.println("Se ha enviado el archivo..."+f.getName());
+            ms.close();
+            log.info("It has already send the file..." + file.getName());
         } catch (IOException ex) {
-            Logger.getLogger(ChatFileDowloader.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ChatFileDowloader.class.getName()).log(Level.SEVERE, "Error while trying to send the file", ex);
         }
     }
     
+    @Override
     public void run(){
-        if(this.isEnviar)
-            enviarArchivo();
-        else
-            recibirArchivo();
+        if(fileSessionInfo.getConfig().isSend()){
+            sendFile();
+            return;
+        }
+        receiveFile();
     }
 }
