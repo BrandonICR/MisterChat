@@ -13,28 +13,38 @@ import org.w3c.dom.NodeList;
 
 import javafx.application.Platform;
 import mx.com.brandonicr.chat.common.constants.Constants;
+import mx.com.brandonicr.chat.common.dto.MessageInfo;
 
 public class ElementUtils {
 
-    public static Node buildNodeMessage(String message, Document document){
+    public static Node buildNodeMessage(Document document, MessageInfo messageInfo){
         Pattern patternEmoji = Constants.patternEmoji;
-        Node messageNode = ComponentBuilder.messageElement(document);
+        Node messageNode = ComponentBuilder.messageElement(document, messageInfo.getType().getSelectorPrefix());
         Node messageTextNode = ElementUtils.findNodeById(messageNode, Constants.idMessage);
         if(Objects.isNull(messageTextNode)){
             Platform.exit();
             return null;
         }
-        Matcher matcher = patternEmoji.matcher(message);
+        Node messageNameNode = ElementUtils.findNodeById(messageTextNode, Constants.idMessageName);
+        Node messageValueNode = ElementUtils.findNodeById(messageTextNode, Constants.idMessageValue);
+        Node messageHourNode = ElementUtils.findNodeById(messageTextNode, Constants.idMessageHour);
+        if(Objects.isNull(messageNameNode) || Objects.isNull(messageValueNode) || Objects.isNull(messageHourNode)){
+            Platform.exit();
+            return null;
+        }
+        messageNameNode.setTextContent(messageInfo.getName());
+        messageHourNode.setTextContent(messageInfo.getHour());
+        Matcher matcher = patternEmoji.matcher(messageInfo.getValue());
         int indexEndEmoji = 0;
         int indexStartEmoji = 0;
         while(matcher.find()){
             indexStartEmoji = matcher.start();
-            ((Element)messageTextNode).appendChild(ComponentBuilder.paragraphElement(document, message.substring(indexEndEmoji, indexStartEmoji)));
+            ((Element)messageValueNode).appendChild(ComponentBuilder.paragraphElement(document, messageInfo.getValue().substring(indexEndEmoji, indexStartEmoji)));
             indexEndEmoji = matcher.end();
-            String emojiName = message.substring(indexStartEmoji, indexEndEmoji);
-            ((Element)messageTextNode).appendChild(ComponentBuilder.iconElement(document, FilePathsSolver.iconSolverPath(emojiName)));
+            String emojiName = messageInfo.getValue().substring(indexStartEmoji, indexEndEmoji);
+            ((Element)messageValueNode).appendChild(ComponentBuilder.iconElement(document, FilePathsSolver.iconSolverPath(emojiName)));
         }
-        ((Element)messageTextNode).appendChild(ComponentBuilder.paragraphElement(document, message.substring(indexEndEmoji, message.length())));
+        ((Element)messageValueNode).appendChild(ComponentBuilder.paragraphElement(document, messageInfo.getValue().substring(indexEndEmoji, messageInfo.getValue().length())));
         return messageNode;
     }
 

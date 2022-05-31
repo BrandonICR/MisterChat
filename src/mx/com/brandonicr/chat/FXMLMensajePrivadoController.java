@@ -2,6 +2,7 @@ package mx.com.brandonicr.chat;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,9 +21,12 @@ import mx.com.brandonicr.chat.common.constants.SpecialCharacterConstants;
 import mx.com.brandonicr.chat.common.dto.ConfigurationFileDowloader;
 import mx.com.brandonicr.chat.common.dto.FileSessionInfo;
 import mx.com.brandonicr.chat.common.dto.MessageBuilder;
+import mx.com.brandonicr.chat.common.dto.MessageInfo;
+import mx.com.brandonicr.chat.common.dto.MessageInfoTypeEnum;
 import mx.com.brandonicr.chat.common.dto.PrivateSessionInfo;
 import mx.com.brandonicr.chat.common.utils.ComponentBuilder;
 import mx.com.brandonicr.chat.common.utils.ElementUtils;
+import mx.com.brandonicr.chat.common.utils.Utils;
 import mx.com.brandonicr.chat.control.ChatFileDowloader;
 import mx.com.brandonicr.chat.control.EmojiGridPane;
 import mx.com.brandonicr.chat.control.MessageTransmitter;
@@ -73,9 +77,8 @@ public class FXMLMensajePrivadoController implements Initializable {
         System.out.println(String.format("Enviando mensaje privado a: %s", pSessionInfo.getReceiver().getUserName()));
 
         if(!textFieldTextoPrivado.getText().trim().isEmpty()){
-            String message = "Yo"+"::"+textFieldTextoPrivado.getText().trim();
-
-            Node messageTextNode = ElementUtils.buildNodeMessage(message, webEngine.getDocument());
+            MessageInfo messageInfo = new MessageInfo("Yo", textFieldTextoPrivado.getText().trim(), Utils.formatDate(new Date()), MessageInfoTypeEnum.OWNER);
+            Node messageTextNode = ElementUtils.buildNodeMessage(webEngine.getDocument(), messageInfo);
             Document document = webEngine.getDocument(); 
             Node body = document.getElementsByTagName(Tag.BODY.toString()).item(SpecialCharacterConstants.INT_ZERO);
             body.appendChild(messageTextNode);

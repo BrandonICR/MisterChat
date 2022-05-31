@@ -28,9 +28,10 @@ import mx.com.brandonicr.chat.common.constants.SpecialCharacterConstants;
 import mx.com.brandonicr.chat.common.dto.FileChat;
 import mx.com.brandonicr.chat.common.dto.FileChatBuilder;
 import mx.com.brandonicr.chat.common.dto.FileSessionInfo;
+import mx.com.brandonicr.chat.common.dto.MessageInfo;
+import mx.com.brandonicr.chat.common.dto.MessageInfoTypeEnum;
 import mx.com.brandonicr.chat.common.utils.ComponentBuilder;
 import mx.com.brandonicr.chat.common.utils.ElementUtils;
-import mx.com.brandonicr.chat.common.utils.ObjectValidator;
 import mx.com.brandonicr.chat.common.utils.Utils;
 
 public class ChatFileDowloader implements Runnable {
@@ -87,8 +88,8 @@ public class ChatFileDowloader implements Runnable {
                     Node body = document.getElementsByTagName(Tag.BODY.toString()).item(SpecialCharacterConstants.INT_ZERO);
                     HTMLImageElement elementImage = (HTMLImageElement)ComponentBuilder.imageElement(document);
                     elementImage.setSrc(FilePaths.fileBasePath.concat(fileChatBuilder.getAbsolutePathFile()));
-                    String message = Utils.formatDate(new Date())+"::"+(String)ObjectValidator.ifTrueReturnOrElse(fileSessionInfo.getConfig().isPrivate(), "PRIVATE::", SpecialCharacterConstants.STR_EMPTY)+fileSessionInfo.getSender().getUserName();
-                    Node messageTextNode = ElementUtils.buildNodeMessage(message, document);
+                    MessageInfo messageInfo = new MessageInfo(fileSessionInfo.getSender().getUserName(), SpecialCharacterConstants.STR_EMPTY, Utils.formatDate(new Date()), MessageInfoTypeEnum.SENDER);
+                    Node messageTextNode = ElementUtils.buildNodeMessage(document, messageInfo);
                     body.appendChild(messageTextNode);
                     body.appendChild(elementImage);
                 }catch(Exception ex){

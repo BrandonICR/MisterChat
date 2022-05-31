@@ -7,6 +7,9 @@ public class Constants {
     public static final String emojiForm = "<<emoji-##1##->>";
     public static final Pattern patternEmoji = Pattern.compile("(<<emoji-\\w{1,50}\\.\\w{1,10}->>)");
     public static final String idMessage = "message-text";
+    public static final String idMessageName = "message-name";
+    public static final String idMessageValue = "message-value";
+    public static final String idMessageHour = "message-hour";
 
     public static Pattern patternSubstitute(String numArg) {
         return Pattern.compile("##".concat(numArg).concat("##"));

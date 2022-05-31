@@ -16,16 +16,16 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane id="AnchorPane" fx:id="anchorPaneInicio" prefHeight="609.0" prefWidth="750.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.com.brandonicr.chat.FXMLDocumentController">
+<AnchorPane id="AnchorPane" fx:id="anchorPaneInicio" prefHeight="609.0" prefWidth="750.0" style="-fx-background-color: rgb(32, 33, 36);" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.com.brandonicr.chat.FXMLDocumentController">
     <children>
-      <WebView fx:id="webView" layoutX="265.0" layoutY="14.0" prefHeight="549.0" prefWidth="474.0" />
+      <WebView fx:id="webView" layoutX="265.0" layoutY="14.0" prefHeight="555.0" prefWidth="474.0" />
       <Button fx:id="buttonAgregar" layoutX="694.0" layoutY="576.0" mnemonicParsing="false" onAction="#agregarTexto" style="-fx-background-color: #c20000;" text="Enviar" textFill="WHITE">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor></Button>
-      <TextField fx:id="textFieldEnviar" layoutX="333.0" layoutY="576.0" prefHeight="25.0" prefWidth="354.0" promptText="Escribe algo...">
+      <TextField fx:id="textFieldEnviar" layoutX="333.0" layoutY="576.0" prefHeight="25.0" prefWidth="354.0" promptText="Escribe algo..." style="-fx-background-color: 404040; -fx-border-color: FFFFFF; -fx-border-radius: 10; -fx-text-fill: rgb(255, 255, 255);">
          <font>
-            <Font name="Bauhaus 93" size="14.0" />
+            <Font name="Lucida Sans Regular" size="14.0" />
          </font>
          <cursor>
             <Cursor fx:constant="V_RESIZE" />
@@ -34,12 +34,12 @@
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor></Button>
-      <Label fx:id="labelMostrar" layoutX="14.0" layoutY="5.0" prefHeight="43.0" prefWidth="244.0" style="-fx-background-color: black;" text="En la sala" textFill="#b50000">
+      <Label fx:id="labelMostrar" layoutX="14.0" layoutY="5.0" prefHeight="43.0" prefWidth="244.0" style="-fx-background-color: rgb(32, 33, 36);" text="En la sala" textFill="#b50000">
          <font>
             <Font name="Arial Bold" size="19.0" />
          </font></Label>
-      <ListView fx:id="listViewContactos" layoutX="7.0" layoutY="60.0" prefHeight="425.0" prefWidth="244.0" />
-      <TextField fx:id="textFieldUsername" layoutX="17.0" layoutY="514.0" prefHeight="25.0" prefWidth="224.0" promptText="Usuario">
+      <ListView fx:id="listViewContactos" layoutX="14.0" layoutY="59.0" prefHeight="425.0" prefWidth="244.0" style="-fx-background-color: rgb(33, 33, 33);" />
+      <TextField fx:id="textFieldUsername" layoutX="17.0" layoutY="514.0" prefHeight="25.0" prefWidth="224.0" promptText="Ingresa el usuario..." style="-fx-background-color: 404040; -fx-border-color: FFFFFF; -fx-border-radius: 10; -fx-text-fill: rgb(255,255,255);">
          <cursor>
             <Cursor fx:constant="V_RESIZE" />
          </cursor></TextField>

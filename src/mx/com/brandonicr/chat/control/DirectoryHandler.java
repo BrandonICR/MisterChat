@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.paint.Paint;
 import javafx.scene.web.WebEngine;
 import mx.com.brandonicr.chat.common.dto.Directory;
 import mx.com.brandonicr.chat.common.dto.PrivateSessionInfo;
@@ -34,6 +35,8 @@ public class DirectoryHandler {
         PrivateSessionInfo pSessionInfo = new PrivateSessionInfo(localUser, user, webEngine);
         usuarioButton.setOnAction(new PrivateMessageEvent(pSessionInfo));
         Platform.runLater(() -> {
+            usuarioButton.setStyle("-fx-background-color: rgb(33, 33, 33)");
+            usuarioButton.setTextFill(Paint.valueOf("rgb(255,255,255)"));
             listObservable.addAll(usuarioButton);
             listViewContactos.getItems().clear();
             listViewContactos.getItems().addAll(listObservable);

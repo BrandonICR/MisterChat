@@ -15,9 +15,12 @@ public class FilePaths {
 
     public static final String imagesPath = staticPath.concat("/images");
     public static final String iconPath = imagesPath.concat("/icons");
-
+    public static final String stylesPath = staticPath.concat("/styles");
     public static final String templatesPath = localSource.concat(staticPath).concat("/templates");
+
+    public static final String imageChatIconPath = "chatIcon.png";
     public static final String fileChatPath = "chat.html";
+    public static final String fileChatStylePath = "chat.css";
 
     private FilePaths(){
         throw new IllegalStateException("This is a private class, you can't create an instance");

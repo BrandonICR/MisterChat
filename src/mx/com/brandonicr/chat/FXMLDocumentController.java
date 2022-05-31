@@ -29,9 +29,12 @@ import mx.com.brandonicr.chat.common.dto.ConfigurationFileDowloader;
 import mx.com.brandonicr.chat.common.dto.Directory;
 import mx.com.brandonicr.chat.common.dto.FileSessionInfo;
 import mx.com.brandonicr.chat.common.dto.MessageBuilder;
+import mx.com.brandonicr.chat.common.dto.MessageInfo;
+import mx.com.brandonicr.chat.common.dto.MessageInfoTypeEnum;
 import mx.com.brandonicr.chat.common.dto.User;
 import mx.com.brandonicr.chat.common.utils.ComponentBuilder;
 import mx.com.brandonicr.chat.common.utils.ElementUtils;
+import mx.com.brandonicr.chat.common.utils.Utils;
 import mx.com.brandonicr.chat.control.ChatFileDowloader;
 import mx.com.brandonicr.chat.control.ChatListener;
 import mx.com.brandonicr.chat.control.ChatUserPublisher;
@@ -94,7 +97,7 @@ public class FXMLDocumentController implements Initializable {
         buttonAgregar.setDisable(true);
 
         directoryHandler = new DirectoryHandler(webEngine, listViewContactos, listObservable, new Directory(), user);
-
+         
         try(BufferedReader fileContentChat = new BufferedReader(new FileReader(new File(FilePaths.templatesPath.concat(SpecialCharacterConstants.STR_SLASH).concat(FilePaths.fileChatPath))));){
             String contentChat = fileContentChat.lines().reduce(SpecialCharacterConstants.STR_EMPTY, (line1, line2) -> line1.concat(SpecialCharacterConstants.STR_SPACE).concat(line2));
             webEngine.loadContent(contentChat);
@@ -102,15 +105,17 @@ public class FXMLDocumentController implements Initializable {
             log.log(Level.SEVERE, "Error: file static/templates/chat.html could not be loaded", e);
             Platform.exit();
         }
-      
+
+        webEngine.setUserStyleSheetLocation(FilePaths.fileBasePath.concat(new File(SpecialCharacterConstants.STR_EMPTY).getAbsolutePath()).concat(FilePaths.source)
+            .concat(SpecialCharacterConstants.STR_SLASH).concat(FilePaths.stylesPath).concat(SpecialCharacterConstants.STR_SLASH)
+            .concat(FilePaths.fileChatStylePath));
     }    
     
     @FXML
     private void agregarTexto(ActionEvent e){
         if(!textFieldEnviar.getText().trim().isEmpty()){
-            String message = "Yo"+"::"+textFieldEnviar.getText().trim();
-            
-            Node messageTextNode = ElementUtils.buildNodeMessage(message, webEngine.getDocument());
+            MessageInfo messageInfo = new MessageInfo("Yo", textFieldEnviar.getText().trim(), Utils.formatDate(new Date()), MessageInfoTypeEnum.OWNER);
+            Node messageTextNode = ElementUtils.buildNodeMessage(webEngine.getDocument(), messageInfo);
             Document document = webEngine.getDocument(); 
             Node body = document.getElementsByTagName(Tag.BODY.toString()).item(SpecialCharacterConstants.INT_ZERO);
             body.appendChild(messageTextNode);

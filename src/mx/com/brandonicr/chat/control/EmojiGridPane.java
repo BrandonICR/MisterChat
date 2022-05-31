@@ -3,6 +3,7 @@ package mx.com.brandonicr.chat.control;
 import java.io.File;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -44,8 +45,10 @@ public class EmojiGridPane {
 
     public void loadEmojis(){
         File iconDir = new File("src/mx/com/brandonicr/chat/static/images/icons");
-        if(!iconDir.isDirectory())
-            throw new RuntimeException("el directorio icons no fue encontrado");
+        if(!iconDir.isDirectory()){
+            log.info("el directorio icons no fue encontrado");
+            Platform.exit();
+        }
         File []icons = iconDir.listFiles();
         for(int i = 0; i < icons.length; i++){
             Button button = new Button();
